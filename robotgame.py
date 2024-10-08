@@ -28,7 +28,7 @@ explored_zones = set()
 def display_status():
     # Displays the current battery level, inventory, and explored zones when progresing
     print(f"🔋 Battery Level: {battery_level}%")
-    print(f"📦 Inventory: {inventory}")
+    print(f"📦 Inventory: {inventory}\n")
 
 # This function will function to display explorable zones and locked zones where it will require an "unlock_item" in order to access the zone.
 def show_available_zones():
@@ -37,31 +37,63 @@ def show_available_zones():
     for zone, details in zones.items():
         if zone not in explored_zones:
             if details["locked"] and details["unlock_item"] not in inventory:
-                print(f"{zone} is locked. You need a {details['unlock_item']} to enter. 🔒")
+                print(f"{zone} is locked. You need a {details['unlock_item']} to enter yes yes. yes? yes 🔒")
             else:
                 available_zones.append(zone)
     return available_zones
 
 # This function will function o update the state of the game when the player visits or explores a zone. It will also provide message or notice if user or the robot finds something.
-def explore_zone(choice):
+def move_to_zone(choice):
     # Explore the zone and it will update any change in the game
+    global battery_level
+
+    # Decrease battery when moving to a new zone
+    battery_level -= 10  
+    # Game over when battery level is 0 or below.
+    if battery_level <= 0:
+        print("⚡ Battery ran out while moving! Game over.")
+        return False  
+
+    # Simialr to the function of the previous function above, it will update the game where it will specifically update the user or robot's inventory. In addition, it will also be the function where it functions to increase or decrease the robot's battery life or capacity. 
+    explore_zone(choice)
+    # Return True means the game will keep going and the loop will not break.  
+    return True  
+
+#Collects battery
+def collect_item(item):
+    """Adds an item to the robot's inventory if it's a power cell."""
+    if item == "power cell":
+        inventory.append(item)
+        print("✅ Power cell added to inventory!")
+
+def display_inventory():
+    # Tjos function will thisplay the dispkay of tehe ivnventory.s
+    print("📦 Current Inventory:")
+    for item in inventory:
+        print(f"  - {item}")
+        # Optional print satatemnt for tje to meet the programming propserites of programmming
+    print()  
+
+def explore_zone(choice):
+    # This function will function o update the state of the game when the player visits or explores a zone. It will also provide message or notice if user or the robot finds something.
     global battery_level
     global inventory
 
+    # It will feedback the of the zone info and what you get in there.
     zone_info = zones[choice]
     print(f"🔍 You found a {zone_info['item']} in {choice}!")
 
-    # Simialr to the function of the previous function above, it will update the game where it will specifically update the user or robot's inventory. In addition, it will also be the function where it functions to increase or decrease the robot's battery life or capacity. 
-    explored_zones.add(choice)
+    # Update inventory and mark zone as explored
+    explored_zones.add(choice)  # It will mark the zone that is epxlored
     if zone_info["item"] == "power cell":
-        inventory.append("power cell")
-        print("✅ Power cell added to inventory.")
+        collect_item("power cell")  # It will initiate the collect item function
     elif zone_info["item"] == "hazard":
-        battery_level -= 20
-        print("⚠️ Hazard encountered! Battery drained by 20%. Sed")
+        battery_level -= 20  # Drain battery if a hazard is encountered
+        print("⚠️ Hazard encountered! Battery drained by 20%.")
     elif zone_info["item"] == "battery pack":
-        battery_level += 20
-        print("🔋 Battery pack found! Battery recharged by 20%. Please never give up")
+        battery_level += 20  # Recharge battery if a battery pack is found
+        print("🔋 Battery pack found! Battery recharged by 20%.")
+
 
 # This will function as the rule of the game. Which is that running out of battery is game over and collecting all batteries means winning the game. When a condition is met, it will return True where it will end the loop similar to the break function and vice versa.
 def check_game_over():
@@ -70,7 +102,7 @@ def check_game_over():
         print("⚡ Battery ran out! Game over bruh.")
         return True
     elif len(inventory) >= 8:  # In here it is 8 batteries well the game features 8 batteries. 
-        print("🎉 Congratulations! You've collected all power cells and won the game! FINALLY I CAN SLEEP!")
+        print("🎉 Congratulations! You've collected all power cells and won the game!  FINALLY I CAN SLEEP!")
         return True
     return False
 
@@ -101,28 +133,22 @@ while battery_level > 0:
 
     # Functions to check if the zone is valid or in the dictionary. If the zone is explored, the user will supposedly be unable to enter the same zone thus a message will be shown to the user to choose another zone that is still unexplored yet.
     if choice not in zones:
-        print("❌ Invalid zone. Please choose again.")
+        print("❌ Invalid zone. Please choose again and choose another zone.")
         continue
     if choice in explored_zones:
-        print("⚠️ You've already explored this zone. Pick a different zone.")
+        print("⚠️ You've already explored this zone. Please pick a different zone thanks. Is robot supposed to be talking like this im so sleepy.")
         continue
 
     # To see if a particular zone is locked and will require the "unlock_item" to make the once inaccessible zone to be accessible.
     if zones[choice]["locked"] and zones[choice]["unlock_item"] not in inventory:
-        print(f"{choice} is locked. You need a {zones[choice]['unlock_item']} to enter the zone yes yes? 🔒")
-        continue  # Skip to the next loop iteration without exploring this zone
+        print(f"{choice} is locked. You need a {zones[choice]['unlock_item']} to enter yes yes? yes locked sad🔒")
+        continue  # Skip to the next loop step without exploring the zone.
 
-    # This will decrease the battery for each move and will stop the game once the battery has reached 0 value.
-    battery_level -= 10
-    if battery_level <= 0:
-        print("⚡ Battery ran out! Game over.")
-        break
-
-    # Robot will explore zone based on chosen zone input.
-    explore_zone(choice)
-
+    # Robot will explore zone based on chosen zone input
+    if move_to_zone(choice):
     # This will see the game over conditions for it to know if it should break the loop or not.
-    if check_game_over():
-        break
+        if check_game_over():
+            break
 # This will output thanks for playing
 print("🛑 Thank you for testing or playing the Robot Exploring game thing.")
+
